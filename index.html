@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WK Studios - Stickman Hook</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            overflow: hidden;
+            background: #000;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* ===== OPENING SCREEN ===== */
+        #opening-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 2s ease-out, visibility 2s ease-out;
+        }
+
+        #opening-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Background Animation */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200vmax;
+            height: 200vmax;
+            background: radial-gradient(circle, rgba(201,162,39,0.08) 0%, transparent 50%);
+            transform: translate(-50%, -50%);
+            animation: bgPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        /* Light Rays */
+        .light-rays {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .light-ray {
+            position: absolute;
+            top: -50%;
+            left: 50%;
+            width: 2px;
+            height: 200%;
+            background: linear-gradient(to bottom, transparent, rgba(201,162,39,0.15), transparent);
+            transform-origin: top center;
+            animation: rayRotate 15s linear infinite;
+        }
+
+        .light-ray:nth-child(1) { animation-delay: 0s; }
+        .light-ray:nth-child(2) { animation-delay: -3s; transform: rotate(72deg); }
+        .light-ray:nth-child(3) { animation-delay: -6s; transform: rotate(144deg); }
+        .light-ray:nth-child(4) { animation-delay: -9s; transform: rotate(216deg); }
+        .light-ray:nth-child(5) { animation-delay: -12s; transform: rotate(288deg); }
+
+        @keyframes rayRotate {
+            0% { transform: rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: rotate(360deg); opacity: 0; }
+        }
+
+        /* Content Container */
+        .content-container {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        /* ===== WK - SMALL (UPAR) ===== */
+        .WK-text {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 400;
+            color: #c9a227;
+            text-transform: uppercase;
+            letter-spacing: clamp(8px, 2vw, 15px);
+            text-align: center;
+            text-shadow: 
+                0 0 20px rgba(201,162,39,0.4),
+                0 0 40px rgba(201,162,39,0.2);
+            opacity: 0;
+            animation: WKReveal 1.5s ease-out 0.3s forwards;
+            line-height: 1;
+            margin-bottom: 5px;
+        }
+
+        @keyframes WKReveal {
+            0% { 
+                opacity: 0; 
+                transform: translateY(-40px);
+                filter: blur(10px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /* ===== Studios - BIG (NEECHE) ===== */
+        .Studios-text {
+            font-size: clamp(2rem, 5vw, 10rem);
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: clamp(10px, 3vw, 30px);
+            text-align: center;
+            text-shadow: 
+                0 0 30px rgba(255,255,255,0.3),
+                0 0 60px rgba(255,255,255,0.2),
+                0 0 120px rgba(201,162,39,0.15);
+            opacity: 0;
+            animation: StudiosReveal 1.8s ease-out 1s forwards;
+            line-height: 1;
+        }
+
+        @keyframes StudiosReveal {
+            0% { 
+                opacity: 0; 
+                transform: translateY(60px) scale(0.8);
+                letter-spacing: 60px;
+                filter: blur(15px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+                letter-spacing: clamp(10px, 3vw, 30px);
+                filter: blur(0);
+            }
+        }
+
+        /* Decorative Line */
+        .classic-line {
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #c9a227, #fff, #c9a227, transparent);
+            margin: 25px auto;
+            animation: lineExpand 1.5s ease-out 2s forwards;
+            max-width: 400px;
+        }
+
+        @keyframes lineExpand {
+            0% { width: 0; opacity: 0; }
+            100% { width: 100%; max-width: 400px; opacity: 1; }
+        }
+
+        /* Creator Name */
+        .creator-name {
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
+            color: #888;
+            letter-spacing: clamp(3px, 1vw, 8px);
+            text-transform: uppercase;
+            text-align: center;
+            opacity: 0;
+            animation: textFadeUp 1.5s ease-out 2.5s forwards;
+        }
+
+        .creator-name .name-highlight {
+            color: #c9a227;
+            font-weight: 600;
+        }
+
+        @keyframes textFadeUp {
+            0% { opacity: 0; transform: translateY(15px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== LOADING ===== */
+        .loading-section {
+            margin-top: 40px;
+            opacity: 0;
+            animation: textFadeUp 1.5s ease-out 3s forwards;
+            text-align: center;
+            width: 100%;
+            max-width: 450px;
+            padding: 0 20px;
+        }
+
+        .loading-text {
+            color: #666;
+            font-size: clamp(0.6rem, 1.2vw, 0.8rem);
+            letter-spacing: clamp(2px, 0.8vw, 5px);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .loading-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .dot {
+            width: clamp(5px, 1.2vw, 8px);
+            height: clamp(5px, 1.2vw, 8px);
+            background: #c9a227;
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        .dot:nth-child(4) { animation-delay: 0.6s; }
+        .dot:nth-child(5) { animation-delay: 0.8s; }
+
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+            border-radius: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #c9a227, #fff, #c9a227);
+            border-radius: 2px;
+            animation: progressLoad 4s ease-in-out 3.5s forwards;
+            box-shadow: 0 0 8px rgba(201,162,39,0.4);
+        }
+
+        @keyframes progressLoad {
+            0% { width: 0%; }
+            20% { width: 25%; }
+            50% { width: 55%; }
+            80% { width: 80%; }
+            100% { width: 100%; }
+        }
+
+        .progress-percentage {
+            color: #c9a227;
+            font-size: clamp(1rem, 2.5vw, 1.6rem);
+            font-family: 'Courier New', monospace;
+            margin-top: 15px;
+            letter-spacing: 2px;
+        }
+
+        /* Film Grain */
+        .film-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* Vignette */
+        .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 3;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+        }
+
+        /* ===== SOCIAL BANNERS - TOP CORNERS ===== */
+        .social-banner {
+            position: fixed;
+            z-index: 100;
+            cursor: pointer;
+            transition: all 0.4s ease;
+        }
+
+        .social-banner:hover {
+            transform: scale(1.15);
+        }
+
+        .social-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            border: 2px solid rgba(255,255,255,0.15);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .social-circle::before {
+            content: '';
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            animation: ripple 2.5s ease-out infinite;
+        }
+
+        .social-circle::after {
+            content: '';
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            animation: ripple 2.5s ease-out 0.5s infinite;
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .social-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        /* Tooltip */
+        .social-tooltip {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-family: 'Georgia', serif;
+        }
+
+        /* YouTube - Top Left */
+        #youtube-banner {
+            top: 60px;
+            left: 1px;
+        }
+
+        #youtube-banner:hover .yt-circle {
+            box-shadow: 0 0 40px rgba(255,0,0,0.7), 0 0 80px rgba(255,0,0,0.3);
+        }
+
+        .yt-circle {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+        }
+
+        .yt-icon {
+            margin-left: 2px;
+        }
+
+        .yt-tooltip {
+            left: 65px;
+            border-color: rgba(255,0,0,0.3);
+        }
+
+        #youtube-banner:hover .yt-tooltip {
+            opacity: 1;
+        }
+
+        /* Instagram - Top left */
+        #instagram-banner {
+            top: 120px;
+            left: 1px;
+        }
+
+        #instagram-banner:hover .ig-circle {
+            box-shadow: 0 0 40px rgba(225,48,108,0.7), 0 0 80px rgba(225,48,108,0.3);
+        }
+
+        .ig-circle {
+            background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        }
+
+        .ig-tooltip {
+            right: 65px;
+            border-color: rgba(225,48,108,0.3);
+        }
+
+        #instagram-banner:hover .ig-tooltip {
+            opacity: 1;
+        }
+
+        /* ===== GAME CONTAINER ===== */
+        #game-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            z-index: 10;
+            display: none;
+        }
+
+        #game-container.active {
+            display: block;
+        }
+
+        #game-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* ===== AD OVERLAY ===== */
+        #ad-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            background: #000;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ad-overlay.active {
+            display: flex;
+        }
+
+        .ad-video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .ad-video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Skip Button */
+        #skip-btn {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            z-index: 2001;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: 'Georgia', serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+        }
+
+        #skip-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #skip-btn:hover {
+            background: rgba(255,255,255,0.25);
+            border-color: #c9a227;
+            transform: translateY(0) scale(1.05);
+        }
+
+        /* Ad Timer */
+        #ad-timer {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2001;
+            color: #c9a227;
+            font-size: 1.2rem;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(201,162,39,0.3);
+        }
+
+        /* Next Ad Countdown */
+        #next-ad-timer {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 101;
+            color: #66CD;
+            font-size: 0.75rem;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            background: rgba(0,0,0,0.0);
+            padding: 8px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: none;
+        }
+
+        #next-ad-timer.active {
+            display: block;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <!-- Film Grain -->
+    <div class="film-grain"></div>
+
+    <!-- Vignette -->
+    <div class="vignette"></div>
+
+    <!-- Opening Screen -->
+    <div id="opening-screen">
+        <div class="bg-animation"></div>
+
+        <div class="light-rays">
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+            <div class="light-ray"></div>
+        </div>
+
+        <div class="content-container">
+            <div class="WK-text">WK</div>
+            <div class="Studios-text">Studios</div>
+            <div class="classic-line"></div>
+            <div class="creator-name">
+                Create by <span class="name-highlight">Rajibx</span>
+            </div>
+
+            <div class="loading-section">
+                <div class="loading-text">Loading Experience</div>
+                <div class="loading-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-track">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="progress-percentage" id="percentage">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube - Top Left -->
+    <a href="https://youtube.com/@williamkaupar?si=XhBEZhLjyG0T_Oo6" target="_blank" id="youtube-banner" class="social-banner">
+        <div class="social-circle yt-circle">
+            <svg class="social-icon yt-icon" viewBox="0 0 24 24">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+        </div>
+        <div class="social-tooltip yt-tooltip">Subscribe on YouTube</div>
+    </a>
+
+    <!-- Instagram - Top Right -->
+    <a href="https://www.instagram.com/itz_fultosi?igsh=MWVyOGt6andoYjN1dA==" target="_blank" id="instagram-banner" class="social-banner">
+        <div class="social-circle ig-circle">
+            <svg class="social-icon" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+            </svg>
+        </div>
+        <div class="social-tooltip ig-tooltip">Follow on Instagram</div>
+    </a>
+
+    <!-- Next Ad Countdown -->
+    <div id="next-ad-timer">Next ad in: <span id="countdown">10:00</span></div>
+
+    <!-- Game Container -->
+    <div id="game-container">
+        <iframe id="game-iframe" src="" allow="fullscreen"></iframe>
+    </div>
+
+    <!-- AD OVERLAY -->
+    <div id="ad-overlay">
+        <div class="ad-video-container">
+            <iframe id="ad-video" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+        </div>
+        <div id="ad-timer">Ad: <span id="ad-seconds">30</span>s</div>
+        <button id="skip-btn" onclick="skipAd()">Skip Ad ⏭</button>
+    </div>
+
+    <script>
+        // Loading percentage
+        let percentage = 0;
+        function updatePercentage() {
+            const percentageElement = document.getElementById('percentage');
+            const interval = setInterval(() => {
+                if (percentage < 100) {
+                    percentage += Math.floor(Math.random() * 2) + 1;
+                    if (percentage > 100) percentage = 100;
+                    percentageElement.textContent = percentage + '%';
+                } else {
+                    clearInterval(interval);
+                }
+            }, 120);
+        }
+
+        // Open game
+        function openGame() {
+            const openingScreen = document.getElementById('opening-screen');
+            const gameContainer = document.getElementById('game-container');
+            const gameIframe = document.getElementById('game-iframe');
+
+            openingScreen.classList.add('hidden');
+            gameIframe.src = 'https://jasongamesdev.github.io/stickman-hook';
+            gameContainer.classList.add('active');
+            document.title = 'Stickman Hook - WK Studios';
+
+            // Start ad timer after game loads
+            setTimeout(startAdTimer, 2000);
+        }
+
+        window.onload = function() {
+            updatePercentage();
+            setTimeout(openGame, 8000);
+        };
+
+        // ===== AD SYSTEM =====
+        const AD_INTERVAL = 10 * 60 * 1000; // 10 minutes
+        const AD_VIDEO_URL = 'https://williamkaupar.github.io/Gaming-ad/';
+        const SKIP_DELAY = 10000; // 10 seconds
+        const AUTO_SKIP_TIME = 100000; // 1 minutes
+
+        let adTimer = null;
+        let skipTimer = null;
+        let autoSkipTimer = null;
+        let countdownInterval = null;
+        let nextAdCountdown = null;
+
+        function startAdTimer() {
+            const nextAdTimerEl = document.getElementById('next-ad-timer');
+            nextAdTimerEl.classList.add('active');
+
+            let timeLeft = AD_INTERVAL;
+
+            nextAdCountdown = setInterval(() => {
+                timeLeft -= 1000;
+                if (timeLeft <= 0) {
+                    clearInterval(nextAdCountdown);
+                    showAd();
+                } else {
+                    const minutes = Math.floor(timeLeft / 60000);
+                    const seconds = Math.floor((timeLeft % 60000) / 1000);
+                    document.getElementById('countdown').textContent = 
+                        `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function showAd() {
+            const adOverlay = document.getElementById('ad-overlay');
+            const adVideo = document.getElementById('ad-video');
+            const skipBtn = document.getElementById('skip-btn');
+            const adSeconds = document.getElementById('ad-seconds');
+            const nextAdTimerEl = document.getElementById('next-ad-timer');
+
+            // Hide next ad timer
+            nextAdTimerEl.classList.remove('active');
+
+            // Show ad overlay
+            adOverlay.classList.add('active');
+
+            // Load video
+            adVideo.src = AD_VIDEO_URL;
+
+            // Reset skip button
+            skipBtn.classList.remove('visible');
+
+            // Show skip button after 3 seconds
+            skipTimer = setTimeout(() => {
+                skipBtn.classList.add('visible');
+            }, SKIP_DELAY);
+
+            // Auto skip after 30 seconds
+            let timeLeft = 10;
+            adSeconds.textContent = timeLeft;
+
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                adSeconds.textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            autoSkipTimer = setTimeout(() => {
+                skipAd();
+            }, AUTO_SKIP_TIME);
+        }
+
+        function skipAd() {
+            const adOverlay = document.getElementById('ad-overlay');
+            const adVideo = document.getElementById('ad-video');
+            const skipBtn = document.getElementById('skip-btn');
+
+            // Clear all timers
+            clearTimeout(skipTimer);
+            clearTimeout(autoSkipTimer);
+            clearInterval(countdownInterval);
+            clearInterval(nextAdCountdown);
+
+            // Stop video
+            adVideo.src = '';
+
+            // Hide overlay
+            adOverlay.classList.remove('active');
+            skipBtn.classList.remove('visible');
+
+            // Restart ad timer
+            startAdTimer();
+        }
+    </script>
+
+</body>
+</html>
